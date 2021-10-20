@@ -32,7 +32,7 @@ def cities_list(q: str = Query(description="Название города", defa
     """
     if q:
         cities = Session().query(City)\
-            .filter(City.name == q).all()
+            .filter(City.name == q.capitalize()).all()
     else:    
         cities = Session().query(City).all()
 
@@ -40,11 +40,25 @@ def cities_list(q: str = Query(description="Название города", defa
 
 
 @app.post('/users-list/', summary='')
-def users_list():
+def users_list(min_age: int = Query(description="Минималььный возвраст", \
+                                    default=None),\
+               max_age: int = Query(description="Максимальный возраст",\
+                                    default=None)):
     """
     Список пользователей
     """
-    users = Session().query(User).all()
+    if max_age is not None and min_age is not None and max_age < min_age:
+        return []
+       
+    users = Session().query(User)
+
+    if min_age is not None:
+        users = users.filter(User.age >= min_age)
+    
+    if max_age is not None:
+        users = users.filter(User.age <= max_age)
+
+    users = users.all()      
     return [{
         'id': user.id,
         'name': user.name,
