@@ -14,7 +14,9 @@ services:
       - DATABASE_NAME=testcrt
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=password
-    command: "uvicorn main:app --host 0.0.0.0 --port 8000"
+    command: "uvicorn main:app --host 0.0.0.0 --port 8000 --log-config ./logging.yaml"
+    volumes:
+      - ./log_data:/log
     ports:
     - 8000:8000
     networks:
