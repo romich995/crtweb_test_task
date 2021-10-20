@@ -133,7 +133,7 @@ def picnic_add(city_id: int = None, datetime: dt.datetime = None):
     }
 
 
-@app.post('/picnic_registrations/', summary='Picnic Registration', tags=['picnic'])
+@app.post('/picnic_registration/', summary='Picnic Registration', tags=['picnic'])
 def register_to_picnic(user_id: int = None, picnic_id: int = None):
     """
     Регистрация пользователя на пикник

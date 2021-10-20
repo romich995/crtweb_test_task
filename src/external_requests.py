@@ -5,7 +5,7 @@ WEATHER_API_KEY = '99ba78ee79a2a24bc507362c5288a81b'
 
 
 class API():
-    def __init__():
+    def __init__(self):
         
         """
         Инициализирует класс
@@ -33,7 +33,7 @@ class API():
         
 class OpenWeatherMapAPI(API):
     """"""
-    base_url = 'https://api.openweathermap.org'
+    base_url = 'https://api.openweathermap.org/data/2.5/weather'
 
     def _get_weather_url(self, city):
         """
@@ -43,7 +43,7 @@ class OpenWeatherMapAPI(API):
         Returns:
 
         """
-        url = base_url
+        url = self.base_url
         url += '?units=metric'
         url += '&q=' + city
         url += '&appid=' + WEATHER_API_KEY
@@ -58,7 +58,7 @@ class OpenWeatherMapAPI(API):
 
         """
         data = response.json()
-        return data['main']['temp']():
+        return data['main']['temp']()
 
     def get_weather(self, city):
         """
@@ -74,7 +74,7 @@ class OpenWeatherMapAPI(API):
         if r is None:
             return None
         else:
-            weather = self.get_weather_from_response(r)
+            weather = self._get_weather_from_response(r)
             return weather
 
     def check_existing(self, city):
