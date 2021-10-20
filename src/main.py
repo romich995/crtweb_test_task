@@ -145,7 +145,7 @@ def register_to_picnic(user_id: int = None, picnic_id: int = None):
         raise HTTPException(status_code=400, 
             detail='Необходимы оба параметра user_id и picnic_id')
 
-    user = Session().query(User).filter(User.id == city_id).first()
+    user = Session().query(User).filter(User.id == user_id).first()
 
     if user is None:
         raise HTTPException(status_code=400,
@@ -162,7 +162,7 @@ def register_to_picnic(user_id: int = None, picnic_id: int = None):
                              picnic_id=picnic_id)
 
     s = Session()
-    s.add(p)
+    s.add(p_r)
     s.commit()
 
     return dict(id=p_r.id,
