@@ -113,7 +113,7 @@ def picnic_add(city_id: int = None, datetime: dt.datetime = None):
     
     if city_id is None or datetime is None:
         raise HTTPException(status_code=400, 
-            detail='Необходимы оба параметра city_is и datetime')
+            detail='Необходимы оба параметра city_id и datetime')
 
     city = Session().query(City).filter(City.id == city_id).first()
 
@@ -133,11 +133,38 @@ def picnic_add(city_id: int = None, datetime: dt.datetime = None):
 
 
 @app.get('/picnic-register/', summary='Picnic Registration', tags=['picnic'])
-def register_to_picnic(*_, **__,):
+def register_to_picnic(user_id: int = None, picnic_id: int = None):
     """
     Регистрация пользователя на пикник
     (Этот эндпойнт необходимо реализовать в процессе выполнения тестового задания)
     """
     # TODO: Сделать логику
-    return ...
+
+    if user_id is None or picnic_id is None:
+        raise HTTPException(status_code=400, 
+            detail='Необходимы оба параметра user_id и picnic_id')
+
+    user = Session().query(User).filter(User.id == city_id).first()
+
+    if user is None:
+        raise HTTPException(status_code=400,
+                detail='Невалидный пользователь')
+
+    picnic = Session().query(Picnic).filter(Picnic.id == picnic_id).first()
+
+    if picnic is None:
+        raise HTTPException(status_code=400,
+                detail='Невалидный пикник')
+
+
+    p_r = PicnicRegistration(user_id=user_id, 
+                             picnic_id=picnic_id)
+
+    s = Session()
+    s.add(p)
+    s.commit()
+
+    return dict(id=p_r.id,
+                user_id=p_r.user_id,
+                picnic_id=p_r.picnic_id)
 
