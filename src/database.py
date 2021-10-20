@@ -1,10 +1,30 @@
+import os
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from external_requests import OpenWeatherMapAPI
 
 # Создание сессии
-SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
+
+os.getenv('')
+
+env_params = ['DATABASE_HOST',
+              'DATABASE_PORT',
+              'DATABASE_NAME',
+              'DATABASE_USER',
+              'DATABASE_PASSWORD']
+
+param_dict = {}
+
+for param in env_params:
+    param_dict[param] = os.getenv(param, '')
+
+
+
+
+SQLALCHEMY_DATABASE_URI = ('postgresql+psycopg2://{DATABASE_HOST}'
+                          ':{DATABASE_PASSWORD}@{DATABASE_HOST}'
+                          ':{DATABASE_PORT}/{DATABASE_NAME}').format(**param_dict)
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -7,7 +7,7 @@ from models import RegisterUserRequest, UserModel
 app = FastAPI()
 
 
-@app.post('/cities/', summary='Create City', description='Создание города по его названию')
+@app.post('/city/', summary='Create City', description='Создание города по его названию')
 def create_city(city: str = Query(description="Название города", default=None)):
     if city is None:
         raise HTTPException(status_code=400, detail='Параметр city должен быть указан')
@@ -68,7 +68,7 @@ def users_list(min_age: int = Query(description="Минималььный воз
     } for user in users]
 
 
-@app.post('/users/', summary='CreateUser', response_model=UserModel)
+@app.post('/user/', summary='CreateUser', response_model=UserModel)
 def register_user(user: RegisterUserRequest):
     """
     Регистрация пользователя
@@ -83,15 +83,15 @@ def register_user(user: RegisterUserRequest):
 
 @app.get('/picnics/', summary='All Picnics', tags=['picnic'])
 def all_picnics(datetime: dt.datetime = Query(default=None, description='Время пикника (по умолчанию не задано)'),
-                past: bool = Query(default=True, description='Включая уже прошедшие пикники')):
+                past: bool = Query(default=True, description='Включая уже прошедшие пикники до datetime')):
     """
     Список всех пикников
     """
     picnics = Session().query(Picnic)
     if datetime is not None:
         picnics = picnics.filter(Picnic.time == datetime)
-    if not past:
-        picnics = picnics.filter(Picnic.time >= dt.datetime.now())
+    if past:
+        picnics = picnics.filter(Picnic.time <= datetime)
 
     return [{
         'id': pic.id,
@@ -108,7 +108,7 @@ def all_picnics(datetime: dt.datetime = Query(default=None, description='Вре�
     } for pic in picnics]
 
 
-@app.post('/picnics/', summary='Picnic Add', tags=['picnic'])
+@app.post('/picnic/', summary='Picnic Add', tags=['picnic'])
 def picnic_add(city_id: int = None, datetime: dt.datetime = None):
     
     if city_id is None or datetime is None:

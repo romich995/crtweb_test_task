@@ -58,7 +58,7 @@ class OpenWeatherMapAPI(API):
 
         """
         data = response.json()
-        return data['main']['temp']()
+        return data['main']['temp']
 
     def get_weather(self, city):
         """
