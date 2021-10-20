@@ -56,7 +56,7 @@ def users_list(age_range: UsersRequestByAge = Depends(UsersRequestByAge)):
 
     users = users.all()
 
-    return UsersResponse(users=users)
+    return [UserModel.from_orm(user) for user in users]
 
 
 @app.post('/user/', summary='CreateUser', response_model=UserModel)
@@ -73,28 +73,28 @@ def register_user(user: RegisterUserRequest):
 
 
 @app.get('/picnics/', summary='All Picnics', tags=['picnic'])
-def all_picnics(datetime: dt.datetime = Query(default=None, description='Время пикника (по умолчанию не задано)'),
-                past: bool = Query(default=True, description='Включая уже прошедшие пикники до datetime')):
+def all_picnics(common: PicnicRequest = Depends(PicnicRequest)):
     """
     Список всех пикников
     """
+    datetime, past = common.get('datetime'), common.get('past')
+    
     picnics = Session().query(Picnic)
-    if datetime is not None:
-        picnics = picnics.filter(Picnic.time == datetime)
-    if past:
+    
+    if datetime is not None and past:
         picnics = picnics.filter(Picnic.time <= datetime)
+
+    if datetime is not None and not past:
+        picnics = picnics.filter(Picnic.time == datetime)
+
+
 
     return [{
         'id': pic.id,
-        'city': Session().query(City).filter(City.id == pic.id).first().name,
+        'city': Session().query(City).filter(City.id == pic.city_id).first().name,
         'time': pic.time,
         'users': [
-            {
-                'id': pr.user.id,
-                'name': pr.user.name,
-                'surname': pr.user.surname,
-                'age': pr.user.age,
-            }
+            UserModel.from_orm(pr.user)
             for pr in Session().query(PicnicRegistration).filter(PicnicRegistration.picnic_id == pic.id)],
     } for pic in picnics]
 

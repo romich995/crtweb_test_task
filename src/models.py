@@ -1,7 +1,7 @@
-from datetime import datetime
+import datetime as dt
 from typing import List, Optional
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, root_validator, validator
 
 
 class RegisterUserRequest(BaseModel):
@@ -14,14 +14,16 @@ class CityRequest(BaseModel):
     name: Optional[str] = None
 
     @validator('name')
-    def capitalize_city(cls, v)
+    def capitalize_city(cls, v):
+        if v is None:
+            return None
         return v.capitalize()
 
 class RegisterCity(CityRequest):
     name: str = None
     
     @validator('name')
-    def capitalize_city(cls, v)
+    def capitalize_city(cls, v):
         return v.capitalize()
 
     @validator('name')
@@ -30,8 +32,6 @@ class RegisterCity(CityRequest):
         assert check.check_existing(v), 'Данный город не существует'
         return v
 
-    
-        
 class CityModel(BaseModel):
     id: int
     name: str
@@ -77,10 +77,21 @@ class UsersRequestByAge(BaseModel):
         return values
 
 
+class PicnicRequest(BaseModel):
+    datetime: Optional[dt.datetime] = None
+    past: Optional[bool] = True
+
+class PicnicResponse(BaseModel):
+    id: int
+    city: CityRequest
+    time: dt.datetime
+    users: List[UserModel]
+    
+
 class Picnic(BaseModel):
     id: int
     city_id: int
-    time: datetime
+    time: dt.datetime
 
     class Config:
         orm_mode = True
