@@ -7,7 +7,7 @@ from models import RegisterUserRequest, UserModel
 app = FastAPI()
 
 
-@app.get('/create-city/', summary='Create City', description='Создание города по его названию')
+@app.post('/cities/', summary='Create City', description='Создание города по его названию')
 def create_city(city: str = Query(description="Название города", default=None)):
     if city is None:
         raise HTTPException(status_code=400, detail='Параметр city должен быть указан')
@@ -25,7 +25,7 @@ def create_city(city: str = Query(description="Название города", d
     return {'id': city_object.id, 'name': city_object.name, 'weather': city_object.weather}
 
 
-@app.post('/get-cities/', summary='Get Cities')
+@app.get('/cities/', summary='Get Cities')
 def cities_list(q: str = Query(description="Название города", default=None)):
     """
     Получение списка городов
@@ -40,7 +40,7 @@ def cities_list(q: str = Query(description="Название города", defa
     return [{'id': city.id, 'name': city.name, 'weather': city.weather} for city in cities]
 
 
-@app.post('/users-list/', summary='')
+@app.get('/users/', summary='')
 def users_list(min_age: int = Query(description="Минималььный возвраст", \
                                     default=None),\
                max_age: int = Query(description="Максимальный возраст",\
@@ -68,7 +68,7 @@ def users_list(min_age: int = Query(description="Минималььный воз
     } for user in users]
 
 
-@app.post('/register-user/', summary='CreateUser', response_model=UserModel)
+@app.post('/users/', summary='CreateUser', response_model=UserModel)
 def register_user(user: RegisterUserRequest):
     """
     Регистрация пользователя
@@ -81,7 +81,7 @@ def register_user(user: RegisterUserRequest):
     return UserModel.from_orm(user_object)
 
 
-@app.get('/all-picnics/', summary='All Picnics', tags=['picnic'])
+@app.get('/picnics/', summary='All Picnics', tags=['picnic'])
 def all_picnics(datetime: dt.datetime = Query(default=None, description='Время пикника (по умолчанию не задано)'),
                 past: bool = Query(default=True, description='Включая уже прошедшие пикники')):
     """
@@ -108,7 +108,7 @@ def all_picnics(datetime: dt.datetime = Query(default=None, description='Вре�
     } for pic in picnics]
 
 
-@app.get('/picnic-add/', summary='Picnic Add', tags=['picnic'])
+@app.post('/picnics/', summary='Picnic Add', tags=['picnic'])
 def picnic_add(city_id: int = None, datetime: dt.datetime = None):
     
     if city_id is None or datetime is None:
@@ -133,7 +133,7 @@ def picnic_add(city_id: int = None, datetime: dt.datetime = None):
     }
 
 
-@app.get('/picnic-register/', summary='Picnic Registration', tags=['picnic'])
+@app.post('/picnic_registrations/', summary='Picnic Registration', tags=['picnic'])
 def register_to_picnic(user_id: int = None, picnic_id: int = None):
     """
     Регистрация пользователя на пикник
