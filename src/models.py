@@ -10,9 +10,28 @@ class RegisterUserRequest(BaseModel):
     age: int
 
 
-class City(BaseModel):
-    name: str
+class CityRequest(BaseModel):
+    name: Optional[str] = None
 
+    @validator('name')
+    def capitalize_city(cls, v)
+        return v.capitalize()
+
+class RegisterCity(CityRequest):
+    name: str = None
+    
+    @validator('name')
+    def capitalize_city(cls, v)
+        return v.capitalize()
+
+    @validator('name')
+    def exist_city(cls, v):
+        check = OpenWeatherMapAPI()
+        assert check.check_existing(v), 'Данный город не существует'
+        return v
+
+    
+        
 class CityModel(BaseModel):
     id: int
     name: str
@@ -29,6 +48,10 @@ class UserModel(BaseModel):
 
     class Config:
         orm_mode = True
+
+class UsersResponse(BaseModel):
+    users: List[UserModel]
+
 
 class UsersRequestByAge(BaseModel):
     min_age: Optional[int] = None

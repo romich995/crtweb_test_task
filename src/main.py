@@ -3,21 +3,18 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Query,  Depends
 from database import engine, Session, Base, City, User, Picnic, PicnicRegistration
 from external_requests import OpenWeatherMapAPI
-from models import RegisterUserRequest, UserModel, City, CityModel, UsersRequestByAge
+from models import RegisterUserRequest, UserModel, CityRequest, \
+    CityModel, UsersRequestByAge, UsersResponse,\
+    RegisterCity
 
 app = FastAPI()
 
 
 
 @app.post('/city/', summary='Create City', description='Создание города по его названию')
-def create_city(city: City):
-    if city is None:
-        raise HTTPException(status_code=400, detail='Параметр city должен быть указан')
-    check = OpenWeatherMapAPI()
-    if not check.check_existing(city.name):
-        raise HTTPException(status_code=400, detail='Параметр city должен быть существующим городом')
+def create_city(city: RegisterCity):
 
-    city_object = Session().query(City).filter(City.name == city.name.capitalize()).first()
+    city_object = Session().query(City).filter(City.name == city.name).first()
     if city_object is None:
         city_object = City(name=city.name.capitalize())
         s = Session()
@@ -28,18 +25,18 @@ def create_city(city: City):
 
 
 @app.get('/cities/', summary='Get Cities')
-def cities_list(q: City = Depends(City)):
+def cities_list(q: CityRequest = Depends(CityRequest)):
     """
     Получение списка городов
     """
     cities = Session().query(City)
     
     if q.name is not None:
-        cities = cities.filter(City.name == q.name.capitalize())
+        cities = cities.filter(City.name == q.name)
     
     cities = cities.all()
 
-    return [{'id': city.id, 'name': city.name, 'weather': city.weather} for city in cities]
+    return [CityModel.from_orm(city) for city in cities]
 
 
 @app.get('/users/', summary='')
@@ -59,7 +56,7 @@ def users_list(age_range: UsersRequestByAge = Depends(UsersRequestByAge)):
 
     users = users.all()
 
-    return UserModel.from_orm(users)
+    return UsersResponse(users=users)
 
 
 @app.post('/user/', summary='CreateUser', response_model=UserModel)
