@@ -30,11 +30,12 @@ def cities_list(q: str = Query(description="Название города", defa
     """
     Получение списка городов
     """
-    if q:
-        cities = Session().query(City)\
-            .filter(City.name == q.capitalize()).all()
-    else:    
-        cities = Session().query(City).all()
+    cities = Session().query(City)
+    
+    if q is not None:
+        cities = cities.filter(City.name == q.capitalize())
+    
+    cities = cities.all()
 
     return [{'id': city.id, 'name': city.name, 'weather': city.weather} for city in cities]
 
