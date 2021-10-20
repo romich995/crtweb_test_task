@@ -1,13 +1,19 @@
 import datetime as dt
 from typing import List, Optional
-
 from pydantic import BaseModel, root_validator, validator
+
+from external_requests import OpenWeatherMapAPI
 
 
 class RegisterUserRequest(BaseModel):
     name: str
     surname: str
     age: int
+
+    @validator('age')
+    def age_ge_0(cls, v):
+        assert v >= 0, 'age must no less than 0'
+        return v
 
 
 class CityRequest(BaseModel):
@@ -57,9 +63,15 @@ class UserModel(BaseModel):
 class UsersResponse(BaseModel):
     __root__: List[UserModel]
 
+    class Config:
+        orm_mode = True
+
+
 class CitiesResponse(BaseModel):
     __root__: List[CityModel]
 
+    class Config:
+        orm_mode = True
 class UserWrap(BaseModel):
     user: UserModel
 
@@ -137,3 +149,4 @@ class RegisterPicnicModel(RegisterRegisterPicnic):
 
     class Config:
         orm_mode = True
+

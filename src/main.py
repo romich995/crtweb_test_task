@@ -2,12 +2,11 @@ import datetime as dt
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query,  Depends
 from database import engine, Session, Base, City, User, Picnic, PicnicRegistration
-from external_requests import OpenWeatherMapAPI
 from models import RegisterUserRequest, UserModel, CityRequest, \
     CityModel, UsersRequestByAge, UsersResponse,\
     RegisterCity, PicnicRequest, PicnicsResponse,\
     CitiesResponse, RegisterPicnic, PicnicModel, \
-    RegisterRegisterPicnic
+    RegisterRegisterPicnic, RegisterPicnicModel
 
 app = FastAPI()
 
