@@ -5,7 +5,7 @@ from database import engine, Session, Base, City, User, Picnic, PicnicRegistrati
 from external_requests import OpenWeatherMapAPI
 from models import RegisterUserRequest, UserModel, CityRequest, \
     CityModel, UsersRequestByAge, UsersResponse,\
-    RegisterCity
+    RegisterCity, PicnicRequest
 
 app = FastAPI()
 
