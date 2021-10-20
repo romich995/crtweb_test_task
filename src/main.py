@@ -2,13 +2,13 @@ import datetime as dt
 from fastapi import FastAPI, HTTPException, Query
 from database import engine, Session, Base, City, User, Picnic, PicnicRegistration
 from external_requests import OpenWeatherMapAPI
-from models import RegisterUserRequest, UserModel
+from models import RegisterUserRequest, UserModel, RegisterCity, 
 
 app = FastAPI()
 
 
 @app.post('/city/', summary='Create City', description='Создание города по его названию')
-def create_city(city: str = Query(description="Название города", default=None)):
+def create_city(city: RegisterCity):
     if city is None:
         raise HTTPException(status_code=400, detail='Параметр city должен быть указан')
     check = OpenWeatherMapAPI()
@@ -22,7 +22,7 @@ def create_city(city: str = Query(description="Название города", d
         s.add(city_object)
         s.commit()
 
-    return {'id': city_object.id, 'name': city_object.name, 'weather': city_object.weather}
+    return CityModel.from_orm(city_object)
 
 
 @app.get('/cities/', summary='Get Cities')
@@ -139,7 +139,6 @@ def register_to_picnic(user_id: int = None, picnic_id: int = None):
     Регистрация пользователя на пикник
     (Этот эндпойнт необходимо реализовать в процессе выполнения тестового задания)
     """
-    # TODO: Сделать логику
 
     if user_id is None or picnic_id is None:
         raise HTTPException(status_code=400, 

@@ -7,6 +7,17 @@ class RegisterUserRequest(BaseModel):
     age: int
 
 
+class RegisterCity(BaseModel):
+    name: str
+
+class CityModel(BaseModel):
+    id: int
+    name: str
+    weather: float
+
+    class Config:
+        orm_mode = True
+
 class UserModel(BaseModel):
     id: int
     name: str
