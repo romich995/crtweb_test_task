@@ -32,6 +32,11 @@ class RegisterCity(CityRequest):
         assert check.check_existing(v), 'Данный город не существует'
         return v
 
+
+class RegisterPicnic(BaseModel):
+    city_id: int
+    datetime: dt.datetime
+
 class CityModel(BaseModel):
     id: int
     name: str
@@ -50,7 +55,16 @@ class UserModel(BaseModel):
         orm_mode = True
 
 class UsersResponse(BaseModel):
-    users: List[UserModel]
+    __root__: List[UserModel]
+
+class CitiesResponse(BaseModel):
+    __root__: List[CityModel]
+
+class UserWrap(BaseModel):
+    user: UserModel
+
+    class Config:
+        orm_mode = True
 
 
 class UsersRequestByAge(BaseModel):
@@ -83,15 +97,43 @@ class PicnicRequest(BaseModel):
 
 class PicnicResponse(BaseModel):
     id: int
-    city: CityRequest
+    city: CityModel
     time: dt.datetime
-    users: List[UserModel]
-    
+    users: List[UserWrap]
 
-class Picnic(BaseModel):
+    class Config:
+        orm_mode = True
+
+    @validator('city')
+    def remain_only_name(cls, v):
+        return v.name
+        
+    @validator('users')
+    def remain_only_content(cls, v):
+        return [ user.user for user in v ]
+
+
+class PicnicsResponse(BaseModel):
+    __root__: List[PicnicResponse]
+
+    class Config:
+        orm_mode = True
+
+class PicnicModel(BaseModel):
     id: int
     city_id: int
     time: dt.datetime
+
+    class Config:
+        orm_mode = True
+
+class RegisterRegisterPicnic(BaseModel):
+    user_id: int
+    picnic_id: int
+
+
+class RegisterPicnicModel(RegisterRegisterPicnic):
+    id: int
 
     class Config:
         orm_mode = True

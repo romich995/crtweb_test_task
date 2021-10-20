@@ -5,7 +5,9 @@ from database import engine, Session, Base, City, User, Picnic, PicnicRegistrati
 from external_requests import OpenWeatherMapAPI
 from models import RegisterUserRequest, UserModel, CityRequest, \
     CityModel, UsersRequestByAge, UsersResponse,\
-    RegisterCity, PicnicRequest
+    RegisterCity, PicnicRequest, PicnicsResponse,\
+    CitiesResponse, RegisterPicnic, PicnicModel, \
+    RegisterRegisterPicnic
 
 app = FastAPI()
 
@@ -16,7 +18,7 @@ def create_city(city: RegisterCity):
 
     city_object = Session().query(City).filter(City.name == city.name).first()
     if city_object is None:
-        city_object = City(name=city.name.capitalize())
+        city_object = City(name=city.name)
         s = Session()
         s.add(city_object)
         s.commit()
@@ -36,7 +38,7 @@ def cities_list(q: CityRequest = Depends(CityRequest)):
     
     cities = cities.all()
 
-    return [CityModel.from_orm(city) for city in cities]
+    return CitiesResponse.from_orm(cities)
 
 
 @app.get('/users/', summary='')
@@ -56,7 +58,7 @@ def users_list(age_range: UsersRequestByAge = Depends(UsersRequestByAge)):
 
     users = users.all()
 
-    return [UserModel.from_orm(user) for user in users]
+    return UsersResponse.from_orm(users)
 
 
 @app.post('/user/', summary='CreateUser', response_model=UserModel)
@@ -73,11 +75,11 @@ def register_user(user: RegisterUserRequest):
 
 
 @app.get('/picnics/', summary='All Picnics', tags=['picnic'])
-def all_picnics(common: PicnicRequest = Depends(PicnicRequest)):
+def all_picnics(picnic: PicnicRequest = Depends(PicnicRequest)):
     """
     Список всех пикников
     """
-    datetime, past = common.get('datetime'), common.get('past')
+    datetime, past = picnic.datetime, picnic.past
     
     picnics = Session().query(Picnic)
     
@@ -87,66 +89,30 @@ def all_picnics(common: PicnicRequest = Depends(PicnicRequest)):
     if datetime is not None and not past:
         picnics = picnics.filter(Picnic.time == datetime)
 
+    picnics = picnics.all()
 
-
-    return [{
-        'id': pic.id,
-        'city': Session().query(City).filter(City.id == pic.city_id).first().name,
-        'time': pic.time,
-        'users': [
-            UserModel.from_orm(pr.user)
-            for pr in Session().query(PicnicRegistration).filter(PicnicRegistration.picnic_id == pic.id)],
-    } for pic in picnics]
-
+    return PicnicsResponse.from_orm(picnics)
 
 @app.post('/picnic/', summary='Picnic Add', tags=['picnic'])
-def picnic_add(city_id: int = None, datetime: dt.datetime = None):
+def picnic_add(param: RegisterPicnic = Depends(RegisterPicnic)):
     
-    if city_id is None or datetime is None:
-        raise HTTPException(status_code=400, 
-            detail='Необходимы оба параметра city_id и datetime')
-
-    city = Session().query(City).filter(City.id == city_id).first()
-
-    if city is None:
-        raise HTTPException(status_code=400,
-                detail='Невалидный город')
+    city_id, datetime = param.city_id, param.datetime
 
     p = Picnic(city_id=city_id, time=datetime)
     s = Session()
     s.add(p)
     s.commit()
 
-    return {
-        'id': p.id,
-        'city': city.name,
-        'time': p.time,
-    }
+    return PicnicModel.from_orm(p)
 
 
 @app.post('/picnic_registration/', summary='Picnic Registration', tags=['picnic'])
-def register_to_picnic(user_id: int = None, picnic_id: int = None):
+def register_to_picnic(param: RegisterRegisterPicnic = Depends(RegisterRegisterPicnic)):
     """
     Регистрация пользователя на пикник
-    (Этот эндпойнт необходимо реализовать в процессе выполнения тестового задания)
+    
     """
-
-    if user_id is None or picnic_id is None:
-        raise HTTPException(status_code=400, 
-            detail='Необходимы оба параметра user_id и picnic_id')
-
-    user = Session().query(User).filter(User.id == user_id).first()
-
-    if user is None:
-        raise HTTPException(status_code=400,
-                detail='Невалидный пользователь')
-
-    picnic = Session().query(Picnic).filter(Picnic.id == picnic_id).first()
-
-    if picnic is None:
-        raise HTTPException(status_code=400,
-                detail='Невалидный пикник')
-
+    user_id, picnic_id = param.user_id, param.picnic_id
 
     p_r = PicnicRegistration(user_id=user_id, 
                              picnic_id=picnic_id)
@@ -155,7 +121,5 @@ def register_to_picnic(user_id: int = None, picnic_id: int = None):
     s.add(p_r)
     s.commit()
 
-    return dict(id=p_r.id,
-                user_id=p_r.user_id,
-                picnic_id=p_r.picnic_id)
+    return RegisterPicnicModel.from_orm(p_r)
 

@@ -79,6 +79,8 @@ class Picnic(Base):
     city_id = Column(Integer, ForeignKey('city.id'), nullable=False)
     time = Column(DateTime, nullable=False)
 
+    city = relationship('City', backref='picnics')
+    
     def __repr__(self):
         return f'<Пикник {self.id}>'
 
