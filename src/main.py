@@ -1,14 +1,16 @@
 import datetime as dt
-from fastapi import FastAPI, HTTPException, Query
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Query,  Depends
 from database import engine, Session, Base, City, User, Picnic, PicnicRegistration
 from external_requests import OpenWeatherMapAPI
-from models import RegisterUserRequest, UserModel, RegisterCity, CityModel
+from models import RegisterUserRequest, UserModel, City, CityModel, UsersRequestByAge
 
 app = FastAPI()
 
 
+
 @app.post('/city/', summary='Create City', description='Создание города по его названию')
-def create_city(city: RegisterCity):
+def create_city(city: City):
     if city is None:
         raise HTTPException(status_code=400, detail='Параметр city должен быть указан')
     check = OpenWeatherMapAPI()
@@ -26,14 +28,14 @@ def create_city(city: RegisterCity):
 
 
 @app.get('/cities/', summary='Get Cities')
-def cities_list(q: str = Query(description="Название города", default=None)):
+def cities_list(q: City = Depends(City)):
     """
     Получение списка городов
     """
     cities = Session().query(City)
     
-    if q is not None:
-        cities = cities.filter(City.name == q.capitalize())
+    if q.name is not None:
+        cities = cities.filter(City.name == q.name.capitalize())
     
     cities = cities.all()
 
@@ -41,15 +43,11 @@ def cities_list(q: str = Query(description="Название города", defa
 
 
 @app.get('/users/', summary='')
-def users_list(min_age: int = Query(description="Минималььный возвраст", \
-                                    default=None),\
-               max_age: int = Query(description="Максимальный возраст",\
-                                    default=None)):
+def users_list(age_range: UsersRequestByAge = Depends(UsersRequestByAge)):
     """
     Список пользователей
     """
-    if max_age is not None and min_age is not None and max_age < min_age:
-        return []
+    min_age, max_age = age_range.min_age, age_range.max_age 
        
     users = Session().query(User)
 
@@ -59,13 +57,9 @@ def users_list(min_age: int = Query(description="Минималььный воз
     if max_age is not None:
         users = users.filter(User.age <= max_age)
 
-    users = users.all()      
-    return [{
-        'id': user.id,
-        'name': user.name,
-        'surname': user.surname,
-        'age': user.age,
-    } for user in users]
+    users = users.all()
+
+    return UserModel.from_orm(users)
 
 
 @app.post('/user/', summary='CreateUser', response_model=UserModel)
