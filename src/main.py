@@ -110,14 +110,24 @@ def all_picnics(datetime: dt.datetime = Query(default=None, description='Вре�
 
 @app.get('/picnic-add/', summary='Picnic Add', tags=['picnic'])
 def picnic_add(city_id: int = None, datetime: dt.datetime = None):
+    
+    if city_id is None or datetime is None:
+        raise HTTPException(status_code=400, 
+            detail='Необходимы оба параметра city_is и datetime')
+
+    city = Session().query(City).filter(City.id == city_id).first()
+
+    if city is None:
+        raise HTTPException(status_code=400,
+                detail='Невалидный город')
+
     p = Picnic(city_id=city_id, time=datetime)
-    s = Session()
     s.add(p)
     s.commit()
 
     return {
         'id': p.id,
-        'city': Session().query(City).filter(City.id == p.id).first().name,
+        'city': city.name,
         'time': p.time,
     }
 
