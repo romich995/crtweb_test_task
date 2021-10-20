@@ -122,6 +122,7 @@ def picnic_add(city_id: int = None, datetime: dt.datetime = None):
                 detail='Невалидный город')
 
     p = Picnic(city_id=city_id, time=datetime)
+    s = Session()
     s.add(p)
     s.commit()
 
